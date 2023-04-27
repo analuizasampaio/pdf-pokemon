@@ -29,6 +29,32 @@ const data = [{
     "types": ["fire"]
 }]
 
+// imgUrl: the image origin url
+// callback: when the image is converted to base64, will call this function 
+// we can wrap this function to Promise-based
+//  function convertImageToBase64Async(imagUrl) {
+//     return new Promise(resovle => convertImageToBase64(imgUrl, resolve))
+//  } 
+
+function convertImageToBase64(imgUrl, callback) {
+    let dataUrl
+    const image = new Image();
+    image.crossOrigin='anonymous';
+    image.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.height = image.naturalHeight;
+      canvas.width = image.naturalWidth;
+      ctx.drawImage(image, 0, 0);
+      dataUrl = canvas.toDataURL();
+      callback && callback(dataUrl)
+    }
+    image.src = imgUrl;
+
+    return dataUrl
+
+  }
+
 const  app = document.getElementById("root");
 const container = document.createElement("div");
 container.setAttribute("class","container");
@@ -63,7 +89,8 @@ data.forEach(pokemon => {
         var doc = new jsPDF()
         doc.text(pokemon.name, 10, 10)
         doc.text(pokemon.description.split("."), 10, 10)
-        // doc.addImage(image, "PNG", 15, 40, 180, 180)
+        let imageBase64 = convertImageToBase64(pokemon.art_url)
+        doc.addImage(imageBase64, "PNG", 15, 40, 180, 180)
         doc.save('a4.pdf')
     }
     titulo.appendChild(botao)
